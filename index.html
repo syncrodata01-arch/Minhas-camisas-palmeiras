@@ -4,55 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acervo de Camisas | Premium</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --verde-palmeiras: #006437; --verde-escuro: #004d2a; --ouro: #c5a847;
             --azul-bb: #e0f2fe; --branco: #ffffff; --gelo: #f0f2f5; --sombra: rgba(0, 0, 0, 0.1);
         }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--gelo); margin: 0; transition: 0.5s; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--gelo); margin: 0; transition: 0.5s; overflow-x: hidden; }
+        
+        /* Fundo Palmeiras */
         body.modo-palmeiras {
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/10/Palmeiras_logo.svg');
             background-repeat: no-repeat; background-attachment: fixed; background-position: center; background-size: 60%; background-blend-mode: overlay;
         }
+        /* Fundo Outros (Azul BB) */
         body.modo-outros { background-color: var(--azul-bb); background-image: none; }
+
         header {
             background: linear-gradient(135deg, var(--verde-escuro), var(--verde-palmeiras));
             color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--ouro);
             position: sticky; top: 0; z-index: 1000;
         }
         body.modo-outros header { background: linear-gradient(135deg, #2c3e50, #34495e); border-bottom: 4px solid #bdc3c7; }
+
         .nav-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
-        .tab-btn { padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; background: rgba(255,255,255,0.2); color: white; }
-        .tab-btn.active { background: var(--branco); color: #333; }
+        .tab-btn { padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; background: rgba(255,255,255,0.2); color: white; transition: 0.3s; }
+        .tab-btn.active { background: var(--branco); color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
         .container { max-width: 1300px; margin: 0 auto; padding: 15px; }
+
         .toolbar {
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 15px;
             border-radius: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
             margin-top: -30px; box-shadow: 0 10px 30px var(--sombra);
         }
+
+        /* Scroll de Filtros para Outros Times */
         .filter-scroll { 
             width: 100%; display: none; overflow-x: auto; white-space: nowrap; 
             padding: 10px 0; border-top: 1px solid #eee; margin-top: 10px;
         }
         body.modo-outros .filter-scroll { display: block; }
+
         .country-btn {
             display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; margin: 0 4px; 
             border-radius: 20px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 0.85rem; transition: 0.3s;
         }
         .country-btn img { width: 20px; height: 15px; object-fit: cover; border-radius: 2px; }
         .country-btn.active { background: #34495e; color: white; border-color: #34495e; }
+
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; margin-top: 25px; }
         .card { background: white; border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 5px 15px var(--sombra); transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
         .img-box { width: 100%; height: 210px; display: flex; align-items: center; justify-content: center; padding: 10px; cursor: pointer; }
         .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .card-info { padding: 12px; text-align: center; }
-        .card-title { font-weight: 700; font-size: 0.95rem; color: #333; display: block; }
-        .edit-area { background: #f9f9f9; padding: 10px; display: none; border-top: 1px solid #eee; }
+        
+        .card-info { padding: 12px; text-align: center; border-top: 1px solid #f5f5f5; }
+        .card-title { font-weight: 700; font-size: 0.95rem; color: #333; display: block; text-transform: uppercase; }
+        
         .badge { position: absolute; top: 10px; left: 10px; background: var(--ouro); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; }
-        .btn-del { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 26px; height: 26px; color: red; cursor: pointer; }
+        .btn-del { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 26px; height: 26px; color: red; cursor: pointer; z-index: 5; }
+        .edit-area { background: #f9f9f9; padding: 10px; display: none; border-top: 1px solid #eee; font-size: 0.8rem; }
         .btn-action { padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: white; }
     </style>
 </head>
@@ -64,12 +75,16 @@
         <button id="tOutros" class="tab-btn" onclick="setModo('outros')">Outros Times</button>
     </div>
     <h1 id="titulo">Camisas Palmeiras Cris</h1>
-    <div style="font-size: 0.85rem;">Total: <span id="totalQtd">0</span> | <span id="totalVal" onclick="togglePrivado()" style="cursor:pointer">R$ ******</span></div>
+    <div style="font-size: 0.85rem; opacity: 0.9;">
+        Total: <span id="totalQtd">0</span> | 
+        <span id="totalVal" onclick="togglePrivado()" style="cursor:pointer">R$ ******</span>
+    </div>
 </header>
 
 <div class="container">
     <div class="toolbar">
-        <input type="text" id="busca" oninput="render()" placeholder="Buscar time ou ano..." style="padding: 10px; border-radius: 20px; border: 1px solid #ddd; width: 180px;">
+        <input type="text" id="busca" oninput="render()" placeholder="Buscar..." style="padding: 10px; border-radius: 20px; border: 1px solid #ddd; width: 150px; outline: none;">
+        
         <label class="btn-action" style="background:var(--verde-palmeiras)">➕ Add <input type="file" id="up" multiple style="display:none" onchange="handleUpload(event)"></label>
         <button class="btn-action" style="background:#3498db" onclick="saveBackup()">💾 Backup</button>
         <label class="btn-action" style="background:#9b59b6">📥 Importar <input type="file" style="display:none" onchange="loadBackup(event)"></label>
@@ -79,40 +94,34 @@
             <button class="country-btn" onclick="filtrarGrupo('ARGENTINA', this)"><img src="https://flagcdn.com/w40/ar.png"> Argentina/Racing</button>
             <button class="country-btn" onclick="filtrarGrupo('BRASIL', this)"><img src="https://flagcdn.com/w40/br.png"> Brasil</button>
             <button class="country-btn" onclick="filtrarGrupo('PORTUGAL', this)"><img src="https://flagcdn.com/w40/pt.png"> Portugal/Benfica</button>
-            <button class="country-btn" onclick="filtrarGrupo('HOLANDA', this)"><img src="https://flagcdn.com/w40/nl.png"> Holanda/Ajax</button>
-            <button class="country-btn" onclick="filtrarGrupo('ITALIA', this)"><img src="https://flagcdn.com/w40/it.png"> Itália/Inter/Juve/Milan/Roma/Lazio</button>
+            <button class="country-btn" onclick="filtrarGrupo('ITALIA', this)"><img src="https://flagcdn.com/w40/it.png"> Itália/Lazio/Milan...</button>
             <button class="country-btn" onclick="filtrarGrupo('ALEMANHA', this)"><img src="https://flagcdn.com/w40/de.png"> Alemanha/BVB/Munich</button>
             <button class="country-btn" onclick="filtrarGrupo('ESPANHA', this)"><img src="https://flagcdn.com/w40/es.png"> Espanha/Barca/Madrid</button>
-            <button class="country-btn" onclick="filtrarGrupo('FRANÇA', this)"><img src="https://flagcdn.com/w40/fr.png"> França/PSG</button>
-            <button class="country-btn" onclick="filtrarGrupo('INGLATERRA', this)"><img src="https://flagcdn.com/w40/gb-eng.png"> Inglaterra/Arsenal/City/United...</button>
-            <button class="country-btn" onclick="filtrarGrupo('IRLANDA', this)"><img src="https://flagcdn.com/w40/ie.png"> Irlanda/Celtic</button>
+            <button class="country-btn" onclick="filtrarGrupo('INGLATERRA', this)"><img src="https://flagcdn.com/w40/gb-eng.png"> Inglaterra/United/City...</button>
         </div>
     </div>
+
     <div id="grid" class="grid"></div>
 </div>
 
 <script>
     let db, modo = "palmeiras", grupoFiltro = "TUDO", ver = false;
 
-    // Dicionário atualizado com Portugal e Benfica
     const grupos = {
         'ARGENTINA': ['ARGENTINA', 'RACING'],
         'BRASIL': ['BRASIL'],
         'PORTUGAL': ['PORTUGAL', 'BENFICA'],
-        'HOLANDA': ['HOLANDA', 'AJAX'],
         'ITALIA': ['ITALIA', 'INTER', 'JUVENTUS', 'MILAN', 'ROMA', 'LAZIO'],
         'ALEMANHA': ['ALEMANHA', 'BVB', 'MUNICH', 'BAYERN'],
         'ESPANHA': ['ESPANHA', 'BARCA', 'BARCELONA', 'MADRID', 'REAL'],
-        'FRANÇA': ['FRANÇA', 'PSG', 'PARIS'],
-        'INGLATERRA': ['INGLATERRA', 'ARSENAL', 'CHELSEA', 'CITY', 'LIVERPOOL', 'TOTTENHAM', 'UNITED'],
-        'IRLANDA': ['IRLANDA', 'CELTIC']
+        'INGLATERRA': ['INGLATERRA', 'ARSENAL', 'CHELSEA', 'CITY', 'LIVERPOOL', 'TOTTENHAM', 'UNITED']
     };
 
-    const req = indexedDB.open("AcervoV5", 1);
+    const req = indexedDB.open("AcervoV6", 1);
     req.onupgradeneeded = (e) => {
         const d = e.target.result;
-        if (!d.objectStoreNames.contains("palmeiras")) d.createObjectStore("palmeiras", { keyPath: "id" });
-        if (!d.objectStoreNames.contains("outros")) d.createObjectStore("outros", { keyPath: "id" });
+        d.createObjectStore("palmeiras", { keyPath: "id" });
+        d.createObjectStore("outros", { keyPath: "id" });
     };
     req.onsuccess = (e) => { db = e.target.result; render(); };
 
@@ -145,18 +154,22 @@
             list.forEach(item => {
                 const nomeItem = item.nome.toUpperCase();
                 const matchBusca = nomeItem.includes(termo);
-                let matchGrupo = (grupoFiltro === "TUDO") || grupos[grupoFiltro].some(k => nomeItem.includes(k));
+                let matchGrupo = (grupoFiltro === "TUDO") || (modo === "palmeiras") || (grupos[grupoFiltro] && grupos[grupoFiltro].some(k => nomeItem.includes(k)));
 
                 if(matchBusca && matchGrupo) {
                     q += parseInt(item.qtd || 1);
                     v += (parseFloat(item.preco || 0) * parseInt(item.qtd || 1));
                     const el = document.createElement('div');
                     el.className = 'card';
-                    el.innerHTML = `<div class="badge">${item.qtd}x</div><button class="btn-del" onclick="del('${item.id}')">✕</button>
+                    el.innerHTML = `
+                        <div class="badge">${item.qtd}x</div>
+                        <button class="btn-del" onclick="del('${item.id}')">✕</button>
                         <div class="img-box" onclick="toggle('${item.id}')"><img src="${item.img}"></div>
                         <div class="card-info"><span class="card-title" contenteditable onblur="upd('${item.id}','nome',this.innerText)">${item.nome}</span></div>
-                        <div id="edit-${item.id}" class="edit-area">Qtd: <input type="number" value="${item.qtd}" onchange="upd('${item.id}','qtd',this.value)" style="width:40px">
-                        R$: <input type="number" value="${item.preco}" onchange="upd('${item.id}','preco',this.value)" style="width:60px"></div>`;
+                        <div id="edit-${item.id}" class="edit-area">
+                            Qtd: <input type="number" value="${item.qtd}" onchange="upd('${item.id}','qtd',this.value)" style="width:40px">
+                            R$: <input type="number" value="${item.preco}" onchange="upd('${item.id}','preco',this.value)" style="width:60px">
+                        </div>`;
                     grid.appendChild(el);
                 }
             });
